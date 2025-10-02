@@ -52,6 +52,11 @@
                         default = { };
                         description = "Applications to skip";
                       };
+                      launch = lib.mkOption {
+                        type = lib.types.attrsOf lib.types.str;
+                        default = { };
+                        description = "Map app_id to actual launch command";
+                      };
                     };
                   };
                   default = { };
