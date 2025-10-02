@@ -12,20 +12,24 @@ and restores your window layout.
 
 ## Installation
 
-### NixOS Module
+### NixOS + Home Manager
 
 ```nix
 {
   inputs.niri-session = {
-    url = "github:amaanq/niri-session"};
+    url = "github:amaanq/niri-session";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  # In your configuration:
-  services.niri-session = {
-    enable = true;
-    settings.skip.apps = [ "discord" "firefox" ];
-  };
+  # In your NixOS configuration:
+  imports = [ niri-session.nixosModules.niri-session ];
+
+  services.niri-session.enable = true;
+
+  # In your Home Manager configuration:
+  imports = [ niri-session.homeManagerModules.niri-session ];
+
+  services.niri-session.settings.skip.apps = [ "discord" "firefox" ];
 }
 ```
 

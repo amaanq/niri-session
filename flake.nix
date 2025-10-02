@@ -60,10 +60,6 @@
               };
             };
             config = mkIf cfg.enable {
-              xdg.configFile."niri-session/config.toml" = {
-                source = (pkgs.formats.toml { }).generate "niri-session-config.toml" cfg.settings;
-              };
-
               systemd.user.services.niri-session = {
                 enable = true;
                 description = "Niri Sessions";
@@ -77,6 +73,22 @@
                   ExecStart = "${getExe cfg.package}";
                   PrivateTmp = true;
                 };
+              };
+            };
+          };
+      };
+
+      homeManagerModules = {
+        niri-session =
+          { config, pkgs, ... }:
+          let
+            inherit (lib) mkIf;
+            cfg = config.services.niri-session;
+          in
+          {
+            config = mkIf cfg.enable {
+              xdg.configFile."niri-session/config.toml" = {
+                source = (pkgs.formats.toml { }).generate "niri-session-config.toml" cfg.settings;
               };
             };
           };
