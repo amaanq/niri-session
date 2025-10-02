@@ -1,5 +1,5 @@
 {
-  description = "niri-session";
+  description = "nirinit";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
@@ -19,7 +19,7 @@
     in
     {
       nixosModules = {
-        niri-session =
+        nirinit =
           { config, pkgs, ... }:
           let
             inherit (lib)
@@ -28,13 +28,13 @@
               mkIf
               getExe
               ;
-            cfg = config.services.niri-session;
+            cfg = config.services.nirinit;
           in
           {
             options = {
-              services.niri-session = {
+              services.nirinit = {
                 enable = mkEnableOption "Niri Sessions";
-                package = mkPackageOption self.packages.${pkgs.system} "niri-session" { };
+                package = mkPackageOption self.packages.${pkgs.system} "nirinit" { };
                 settings = lib.mkOption {
                   type = lib.types.submodule {
                     freeformType = (pkgs.formats.toml { }).type;
@@ -55,12 +55,12 @@
                     };
                   };
                   default = { };
-                  description = "Configuration for niri-session";
+                  description = "Configuration for nirinit";
                 };
               };
             };
             config = mkIf cfg.enable {
-              systemd.user.services.niri-session = {
+              systemd.user.services.nirinit = {
                 enable = true;
                 description = "Niri Sessions";
                 wantedBy = [ "graphical-session.target" ];
@@ -79,16 +79,16 @@
       };
 
       homeManagerModules = {
-        niri-session =
+        nirinit =
           { config, pkgs, ... }:
           let
             inherit (lib) mkIf;
-            cfg = config.services.niri-session;
+            cfg = config.services.nirinit;
           in
           {
             config = mkIf cfg.enable {
-              xdg.configFile."niri-session/config.toml" = {
-                source = (pkgs.formats.toml { }).generate "niri-session-config.toml" cfg.settings;
+              xdg.configFile."nirinit/config.toml" = {
+                source = (pkgs.formats.toml { }).generate "nirinit-config.toml" cfg.settings;
               };
             };
           };
@@ -98,10 +98,10 @@
         system:
         let
           pkgs = pkgsFor.${system};
-          packageName = "niri-session";
+          packageName = "nirinit";
         in
         {
-          niri-session = pkgs.rustPlatform.buildRustPackage {
+          nirinit = pkgs.rustPlatform.buildRustPackage {
             pname = packageName;
             src = ./.;
             version = "0.1.1";
@@ -111,7 +111,7 @@
             meta.mainProgram = packageName;
           };
 
-          default = self.packages.${system}.niri-session;
+          default = self.packages.${system}.nirinit;
         }
       );
 

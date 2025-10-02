@@ -1,4 +1,4 @@
-# niri-session
+# nirinit
 
 Session manager for [Niri](https://github.com/YaLTeR/niri) that automatically saves
 and restores your window layout.
@@ -16,20 +16,20 @@ and restores your window layout.
 
 ```nix
 {
-  inputs.niri-session = {
-    url = "github:amaanq/niri-session";
+  inputs.nirinit = {
+    url = "github:amaanq/nirinit";
     inputs.nixpkgs.follows = "nixpkgs";
   };
 
   # In your NixOS configuration:
-  imports = [ niri-session.nixosModules.niri-session ];
+  imports = [ nirinit.nixosModules.nirinit ];
 
-  services.niri-session.enable = true;
+  services.nirinit.enable = true;
 
   # In your Home Manager configuration:
-  imports = [ niri-session.homeManagerModules.niri-session ];
+  imports = [ nirinit.homeManagerModules.nirinit ];
 
-  services.niri-session.settings.skip.apps = [ "discord" "firefox" ];
+  services.nirinit.settings.skip.apps = [ "discord" "firefox" ];
 }
 ```
 
@@ -39,13 +39,13 @@ and restores your window layout.
 cargo install --path .
 
 # Run as systemd user service or manually
-niri-session --save-interval 300
+nirinit --save-interval 300
 ```
 
 ## Configuration
 
-The config file is located at : `$XDG_CONFIG_HOME/niri-session/config.toml`
-(for most users this would be `~/.config/niri-session/config.toml`)
+The config file is located at : `$XDG_CONFIG_HOME/nirinit/config.toml`
+(for most users this would be `~/.config/nirinit/config.toml`)
 
 ```toml
 [skip]
@@ -54,8 +54,8 @@ apps = ["discord", "slack"]
 
 ## Session file
 
-The session file is located at `$XDG_DATA_HOME/niri-session/session.json`
-(again, for most users this would be `~/.local/share/niri-session/session.json`)
+The session file is located at `$XDG_DATA_HOME/nirinit/session.json`
+(again, for most users this would be `~/.local/share/nirinit/session.json`)
 
 Normally, you shouldn't need to touch this, but if you notice something odd happening
 when your session is being restored, deleting this file might help.

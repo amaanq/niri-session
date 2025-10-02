@@ -35,4 +35,4 @@ jobs:
         run: nix flake check --system ${{ matrix.system.nix-system }}
 
       - name: Build
-        run: nix build .#niri-session --system ${{ matrix.system.nix-system }}
+        run: nix build .#nirinit --system ${{ matrix.system.nix-system }}

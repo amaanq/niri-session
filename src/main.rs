@@ -363,7 +363,7 @@ fn main() -> Result<()> {
         flag::register(*sig, Arc::clone(&term))?;
     }
 
-    info!("starting niri-session-manager");
+    info!("starting nirinit-manager");
     restore_session(&config, &session_path)?;
 
     info!("starting periodic save (interval: {}s)", args.save_interval);

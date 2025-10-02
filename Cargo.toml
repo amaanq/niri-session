@@ -1,10 +1,10 @@
 [package]
-name = "niri-session"
+name = "nirinit"
 description = "A session manager for Niri, a scrollable-tiling Wayland compositor"
 version = "0.1.1"
 authors = ["Amaan Qureshi <contact@amaanq.com>"]
 edition = "2024"
-repository = "https://github.com/amaanq/niri-session"
+repository = "https://github.com/amaanq/nirinit"
 license = "MPL-2.0"
 categories = ["command-line-utilities", "config"]
 keywords = ["niri", "wayland", "session", "window-manager"]

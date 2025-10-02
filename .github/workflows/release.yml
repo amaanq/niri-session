@@ -16,10 +16,10 @@ jobs:
         include:
           - runs-on: ubuntu-24.04
             nix-system: x86_64-linux
-            artifact-name: niri-session-x86_64-linux
+            artifact-name: nirinit-x86_64-linux
           - runs-on: ubuntu-24.04-arm
             nix-system: aarch64-linux
-            artifact-name: niri-session-aarch64-linux
+            artifact-name: nirinit-aarch64-linux
     runs-on: ${{ matrix.runs-on }}
     steps:
       - uses: actions/checkout@v5
@@ -36,12 +36,12 @@ jobs:
           use-flakehub: false
 
       - name: Build release binary
-        run: nix build .#niri-session --system ${{ matrix.nix-system }}
+        run: nix build .#nirinit --system ${{ matrix.nix-system }}
 
       - name: Prepare artifact
         run: |
           mkdir -p dist
-          cp -L result/bin/niri-session dist/${{ matrix.artifact-name }}
+          cp -L result/bin/nirinit dist/${{ matrix.artifact-name }}
           chmod +x dist/${{ matrix.artifact-name }}
 
       - name: Upload artifact
