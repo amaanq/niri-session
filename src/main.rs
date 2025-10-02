@@ -44,6 +44,8 @@ struct SessionWindow<'niri> {
     id: u64,
     /// The application id of the window, see <https://wayland-book.com/xdg-shell-basics/xdg-toplevel.html>
     app_id: Option<String>,
+    /// The launch command to spawn this window (mapped from `app_id` via config, otherwise `app_id` if no mapping exists)
+    launch_command: Option<String>,
     /// Index of the workspace on the corresponding monitor
     workspace_idx: Option<u8>,
     /// Name of the workspace, in case of a named workspace
@@ -59,6 +61,9 @@ struct SessionWindow<'niri> {
 struct Config {
     #[serde(default)]
     skip: Skip,
+    /// Map `app_id` to actual launch command (e.g., "thorium-discord.com__app-Default" -> "discord-web-app")
+    #[serde(default)]
+    launch: std::collections::HashMap<String, String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -165,7 +170,7 @@ fn find_workspace_for_window<'niri>(
 }
 
 /// Save the session
-fn save_session(file_path: &Path) -> Result<()> {
+fn save_session(file_path: &Path, config: &Config) -> Result<()> {
     let windows = niri_windows()?;
     let workspaces = niri_workspaces()?;
 
@@ -174,9 +179,15 @@ fn save_session(file_path: &Path) -> Result<()> {
         .map(|window| {
             let workspace = find_workspace_for_window(&window, &workspaces);
 
+            // Map app_id to launch command if it exists in the config
+            let launch_command = window.app_id.as_ref().and_then(|app_id| {
+                config.launch.get(app_id).cloned().or_else(|| Some(app_id.clone()))
+            });
+
             SessionWindow {
                 id: window.id,
                 app_id: window.app_id,
+                launch_command,
                 workspace_idx: workspace.map(|w| w.idx),
                 workspace_name: workspace.and_then(|w| w.name.as_deref()),
                 workspace_output: workspace.and_then(|w| w.output.as_deref()),
@@ -195,12 +206,13 @@ fn save_session(file_path: &Path) -> Result<()> {
 }
 
 fn spawn_and_move_window<'niri>(
+    launch_command: &str,
     app_id: &str,
     workspace_idx: Option<u8>,
     workspace_name: Option<&'niri str>,
     workspace_output: Option<&'niri str>,
 ) -> Result<()> {
-    let command = vec![app_id.to_string()];
+    let command = vec![launch_command.to_string()];
 
     let mut socket = Socket::connect().wrap_err("Failed to connect to Niri IPC socket")?;
 
@@ -209,7 +221,7 @@ fn spawn_and_move_window<'niri>(
         .map_err(NiriError::Send)?;
 
     let Reply::Ok(Response::Handled) = reply else {
-        error!("failed to spawn app `{app_id}`");
+        error!("failed to spawn command `{launch_command}`");
         return Ok(());
     };
 
@@ -260,14 +272,14 @@ fn spawn_and_move_window<'niri>(
         return Ok(());
     }
 
-    warn!("window for `{app_id}` did not appear within 5s");
+    warn!("window for `{launch_command}` did not appear within 5s");
 
     Ok(())
 }
 
 fn restore_session(config: &Config, session_path: &Path) -> Result<()> {
     if !session_path.exists() {
-        save_session(session_path)?;
+        save_session(session_path, config)?;
         return Ok(());
     }
 
@@ -287,21 +299,22 @@ fn restore_session(config: &Config, session_path: &Path) -> Result<()> {
     sorted_windows.sort_by_key(|w| (w.workspace_output, w.workspace_idx));
 
     for window in sorted_windows {
-        let app_id = window.app_id;
-
-        // Check if the app should be skipped
-        if let Some(app_id) = app_id {
-            if config.skip.apps.contains(&app_id) {
-                info!("skipping app: {app_id}");
+        // Check if the launch command should be skipped
+        if let Some(ref launch_command) = window.launch_command {
+            if config.skip.apps.contains(launch_command) {
+                info!("skipping command: {launch_command}");
                 continue;
             }
 
-            spawn_and_move_window(
-                &app_id,
-                window.workspace_idx,
-                window.workspace_name,
-                window.workspace_output,
-            )?;
+            if let Some(ref app_id) = window.app_id {
+                spawn_and_move_window(
+                    launch_command,
+                    app_id,
+                    window.workspace_idx,
+                    window.workspace_name,
+                    window.workspace_output,
+                )?;
+            }
         }
     }
 
@@ -373,7 +386,7 @@ fn main() -> Result<()> {
         thread::sleep(Duration::from_millis(100));
 
         if last_save.elapsed() >= Duration::from_secs(args.save_interval) {
-            if let Err(e) = save_session(&session_path) {
+            if let Err(e) = save_session(&session_path, &config) {
                 error!("failed to save session: {e}");
             }
             last_save = Instant::now();
@@ -381,7 +394,7 @@ fn main() -> Result<()> {
     }
 
     info!("shutting down...");
-    if let Err(e) = save_session(&session_path) {
+    if let Err(e) = save_session(&session_path, &config) {
         error!("error saving final session: {e}");
     }
     info!("shutdown complete");
