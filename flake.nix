@@ -80,10 +80,10 @@
 
       homeManagerModules = {
         nirinit =
-          { config, pkgs, ... }:
+          { osConfig, pkgs, ... }:
           let
             inherit (lib) mkIf;
-            cfg = config.services.nirinit;
+            cfg = osConfig.services.nirinit;
           in
           {
             config = mkIf cfg.enable {
