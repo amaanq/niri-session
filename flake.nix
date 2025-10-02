@@ -33,7 +33,7 @@
           {
             options = {
               services.nirinit = {
-                enable = mkEnableOption "Niri Sessions";
+                enable = mkEnableOption "Nirinit";
                 package = mkPackageOption self.packages.${pkgs.system} "nirinit" { };
                 settings = lib.mkOption {
                   type = lib.types.submodule {
@@ -62,7 +62,7 @@
             config = mkIf cfg.enable {
               systemd.user.services.nirinit = {
                 enable = true;
-                description = "Niri Sessions";
+                description = "Nirinit";
                 wantedBy = [ "graphical-session.target" ];
                 partOf = [ "graphical-session.target" ];
                 wants = [ "graphical-session.target" ];
