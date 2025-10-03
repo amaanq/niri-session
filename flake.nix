@@ -83,7 +83,7 @@
           };
       };
 
-      homeManagerModules = {
+      homeModules = {
         nirinit =
           { osConfig, pkgs, ... }:
           let

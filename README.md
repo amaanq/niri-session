@@ -27,7 +27,7 @@ and restores your window layout.
   services.nirinit.enable = true;
 
   # In your Home Manager configuration:
-  imports = [ nirinit.homeManagerModules.nirinit ];
+  imports = [ nirinit.homeModules.nirinit ];
 
   services.nirinit.settings.skip.apps = [ "discord" "firefox" ];
 }
