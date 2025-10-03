@@ -14,8 +14,8 @@
         "x86_64-linux"
         "aarch64-linux"
       ];
-      eachSystem = lib.genAttrs systems;
-      pkgsFor = inputs.nixpkgs.legacyPackages;
+
+      eachSystem = f: lib.genAttrs systems (system: f inputs.nixpkgs.legacyPackages.${system});
     in
     {
       nixosModules = {
@@ -81,6 +81,8 @@
               };
             };
           };
+
+        default = self.nixosModules.nirinit;
       };
 
       homeModules = {
@@ -97,12 +99,13 @@
               };
             };
           };
+
+        default = self.homeModules.nirinit;
       };
 
       packages = eachSystem (
-        system:
+        pkgs:
         let
-          pkgs = pkgsFor.${system};
           packageName = "nirinit";
         in
         {
@@ -116,30 +119,24 @@
             meta.mainProgram = packageName;
           };
 
-          default = self.packages.${system}.nirinit;
+          default = self.packages.${pkgs.system}.nirinit;
         }
       );
 
-      devShells = eachSystem (
-        system:
-        let
-          pkgs = pkgsFor.${system};
-        in
-        {
-          default = pkgs.mkShell {
-            packages = builtins.attrValues {
-              inherit (pkgs)
-                cargo
-                clippy
-                rustc
-                rust-analyzer
-                rustfmt
+      devShells = eachSystem (pkgs: {
+        default = pkgs.mkShell {
+          packages = builtins.attrValues {
+            inherit (pkgs)
+              cargo
+              clippy
+              rustc
+              rust-analyzer
+              rustfmt
 
-                nixfmt-rfc-style
-                ;
-            };
+              nixfmt-rfc-style
+              ;
           };
-        }
-      );
+        };
+      });
     };
 }
