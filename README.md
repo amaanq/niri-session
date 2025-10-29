@@ -16,20 +16,33 @@ and restores your window layout.
 
 ```nix
 {
-  inputs.nirinit = {
-    url = "github:amaanq/nirinit";
-    inputs.nixpkgs.follows = "nixpkgs";
-  };
+  # In Nix Flake
+  {
+    inputs.nirinit = {
+      url = "github:amaanq/nirinit";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
+    outputs = {nirinit, ...}@inputs:
+    {
+      nixosConfigurations.default = nixpkgs.lib.nixosSystem {
+        specialArgs = { inherit inputs; };
+        modules = [ nirinit.nixosModules.nirinit ];
+      };
+    };
+  }
+  
   # In your NixOS configuration:
-  imports = [ nirinit.nixosModules.nirinit ];
-
-  services.nirinit.enable = true;
+  {...}:
+  {
+    services.nirinit.enable = true;
+  }
 
   # In your Home Manager configuration:
-  imports = [ nirinit.homeModules.nirinit ];
-
-  services.nirinit.settings.skip.apps = [ "discord" "firefox" ];
+  {...}:
+  {
+    services.nirinit.settings.skip.apps = [ "discord" "firefox" ];
+  }
 }
 ```
 
